@@ -1,4 +1,5 @@
 package com.example;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -6,38 +7,65 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 
-public class MyThread extends Thread{
+public class MyThread extends Thread {
     Socket client;
 
     public MyThread(Socket socket) {
         this.client = socket;
     }
 
-    public void run(){
+    public void run() {
         Random rand = new Random();
-        int randomNumber = rand.nextInt(101);
-        System.out.println("Random Number: " + randomNumber);
-        try{
+        int randomNumber = rand.nextInt(0, 4);
+        String[] parole = { "lasagna", "bologna", "catamarano", "informatica", "incendio" };
+        String parolaScelta = parole[randomNumber];
+        int lunghezzaParola = parolaScelta.length();
+
+        try {
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            DataOutputStream out = new DataOutputStream(client.getOutputStream());   
-            
+            DataOutputStream out = new DataOutputStream(client.getOutputStream());
+
             System.out.println("client connected");
-            int clientGuess = -1;
+            System.out.println("parola scelta : " + parolaScelta);
+            System.out.println("indovina la parola di " + lunghezzaParola + " lettere");
+
+            for (int i = 0; i < lunghezzaParola; i++) {
+                System.out.print("* ");
+            }
+            System.out.println("\n");
+
+            String optionGame = in.readLine();
+
             int guessCounter = 0;
-            do{
-                clientGuess = Integer.parseInt(in.readLine());
+            do {
+
+                if (optionGame.equals("1")) {
+                    String lettera = in.readLine();
+                    if (parolaScelta.contains(lettera)) {
+                        out.writeBytes("lettera presente");
+                    }
+                    guessCounter++;
+
+                }
+                if (optionGame.equals("2")) {
+                    System.out.println("option : " + optionGame);
+                    String lettera = in.readLine();
+                    if (parolaScelta.equals(lettera)) {
+                        out.writeBytes("giusto");
+                        System.out.println("client ha indovinato in " + guessCounter + " tentativi la parola [ "
+                                + parolaScelta + " ]");
+                                guessCounter++;
+                    } else {
+                        out.writeBytes("sbagliato");
+                        guessCounter++;
+                    }
+                }
+
                 guessCounter++;
-                System.out.println("guess number " + guessCounter);
-                System.out.println("number received from client: " + clientGuess);
-                out.writeBytes((clientGuess < randomNumber ? 
-                                "1" : 
-                                clientGuess > randomNumber ?
-                                "2" :
-                                "3") + '\n');
-            }while(clientGuess != randomNumber);
-            System.out.println("client guessed correctly in " + guessCounter + " tries");
+            } while (optionGame != "3");
+            System.out.println("Connessione chiusa");
             client.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println("Error during server instance");
             System.exit(1);

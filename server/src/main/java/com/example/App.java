@@ -14,13 +14,12 @@ public class App
         try{
             System.out.println("server started and executing");
             ServerSocket server = new ServerSocket(3000);
-            
 
-            while(true){
+            do{
                 Socket client = server.accept();
                 MyThread clientManager = new MyThread(client);
                 clientManager.start();
-            }
+            }while(true);
 
         }catch(Exception e){
             System.out.println(e.getMessage());
